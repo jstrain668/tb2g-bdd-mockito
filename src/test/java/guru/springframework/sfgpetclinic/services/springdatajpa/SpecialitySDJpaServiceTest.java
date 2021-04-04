@@ -11,8 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -134,6 +134,32 @@ class SpecialitySDJpaServiceTest {
         service.delete(new Speciality());
 
         //then
+        then(specialtyRepository).should().delete(any());
+    }
+
+    @Test
+    void testDoThrow() {
+        doThrow(new RuntimeException("Boom")).when(specialtyRepository).delete(any());
+
+        assertThrows(RuntimeException.class, ()->specialtyRepository.delete(new Speciality()) );
+        verify(specialtyRepository).delete(any());
+    }
+
+    @Test
+    void testFindByIDThrows() {
+        given(specialtyRepository.findById(1l)).willThrow(new RuntimeException("boom"));
+
+        assertThrows(RuntimeException.class, ()->specialtyRepository.findById(1l) );
+
+        then(specialtyRepository).should().findById(1l);
+    }
+
+    @Test
+    void testDeleteBDD() {
+        willThrow(new RuntimeException("boom")).given(specialtyRepository).delete(any());
+
+        assertThrows(RuntimeException.class, () -> specialtyRepository.delete(new Speciality()));
+
         then(specialtyRepository).should().delete(any());
     }
 }
